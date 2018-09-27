@@ -1,4 +1,6 @@
 
+// TODO: Make function that gives policy image
+
 const screens = {
     nameEntry : undefined,
     menu : undefined,
@@ -390,6 +392,8 @@ const AddPolicyToBoard = function(policy){
     let div = document.createElement("div");
     div.className = "policy-on-board";
     div.innerHTML = "<b>" + prez + "</b><br>" + chan + "<br>";
+    if(policy.contention)
+        div.style.backgroundColor = COLOR.CONTENTION;
     div.appendChild(isLiberal === true ? images.liberal.cloneNode(true) : images.fascist.cloneNode(true));
     elements.policyList.appendChild(div);
 }
@@ -441,7 +445,8 @@ const CheckTracker = function(){
             let isLiberal = check[2];
 
             if(isLiberal === true){
-                investigator.implicatedPlayers.push(investigatee);
+                // investigator.implicatedPlayers.push(investigatee);
+                investigatee.implicatedPlayers.push(investigator);
                 UpdateImplications();
             } else {
                 investigator.Contention();
