@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+    <title>Secret Hitler Helper</title>
+    <style>
+        html, body{
+            font-family: system-ui;
+        }
+        img{
+            width : 20px;
+        }
+        button{
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            overflow: hidden;
+        }
+        ul{
+            list-style-type: none;
+            border-style: solid;
+            border-width: 2px;
+            width: auto;
+            padding: 5px;
+            display: inline-block;
+        }
+        ul li{
+            float: left;
+        }
+        #implications li{
+            float: none;
+        }
+        .policy-on-board{
+            display: inline-block;
+            margin: 5px;
+            padding: 2px;
+            text-align: center;
+            background-color:darkgray;
+            font-size: 12px;
+        }
+    </style>
+    <script src="main.js"></script>
+</head>
+<body>
+
+    
+
+    <div id="name-entry">
+        <p>Name Entry</p>
+        <ol>
+            <li><input type="text" value="Alex"></li>
+            <li><input type="text" value="Bob"></li>
+            <li><input type="text" value="Carol"></li>
+            <li><input type="text" value="Darren"></li>
+            <li><input type="text" value="Eli"></li>
+            <li><input type="text" value="Farrah"></li>
+            <li><input type="text" value="Greg"></li>
+            <li><input type="text" value="Hans"></li>
+            <li><input type="text" value="Ichabod"></li>
+            <li><input type="text" value="Jessie"></li>
+        </ol>
+        <button id="name-submit">Begin</button>
+    </div>
+
+    <div id="all-menu">
+        <ul id="policy-list"></ul><br>
+        <ul id="player-buttons"></ul><br>
+        <ul id="team-buttons">
+            <li><button id="libButton"><img src="images/lib.png"></button></li>
+            <li><button id="facButton"><img src="images/fac.png"></button></li>
+            <li><button id="undoButton">Undo</button></li>
+            <li><button id="confirmButton">Confirm</button></li>
+        </ul><br>
+        <button id="back">Back</button><br>
+    </div>
+
+    <div id="menu">
+        <p>Menu</p>
+        <button id="go-to-player-list">Player List</button>
+        <button id="go-to-administration">Administration</button>
+        <button id="go-to-check">Check Player</button>
+        <br>
+        <ul id="implications"></ul>
+    </div>
+
+    <div id="player-list">
+        <p>Player List</p>
+        <ol></ol>
+    </div>
+
+    <div id="administration">
+        <h3>New Administration</h3>
+        <h4>President: </h4><div id="newPresident"></div>
+        <h4>Chancellor: </h4><div id="newChancellor"></div>
+        <div id="three-policies"></div><br>
+        <div id="two-policies"></div><br>
+        <div id="one-policy"></div><br>
+    </div>
+
+    <div id="check">
+        <p>Check Player</p>
+        <h4>Investigator: </h4><div id="investigator"></div>
+        <h4>Check: </h4><div id="investigatee"></div>
+        <h4>Result: </h4><div id="check-result"></div>
+    </div>
+
+    <div id="images" hidden>
+        <img id="libImg" src="images/lib.png">
+        <img id="facImg" src="images/fac.png">
+    </div>
+
+</body>
+</html>
