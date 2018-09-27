@@ -1,0 +1,92 @@
+html, body{
+    font-family: system-ui;
+    font-size: 40pt;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: black;
+}
+div{
+    padding: 5%;
+    margin: 5%;
+    width: 80%;
+    /* height: 80%; */
+    height: auto;
+    background-color:darkgray;
+}
+p{
+    margin: 5px;
+    padding: 5px;
+}
+#all-menu{
+    height: auto;
+    /* display: inline-block; */
+}
+#policy-list{
+    /* min-height: 200px; */
+}
+#player-list button{
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+}
+img{
+    width : 80px;
+    margin : 5px;
+}
+button{
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
+    overflow: hidden;
+    background-color: white;
+    font-size: 32pt;
+}
+
+#undoButton, #back{
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
+    font-size: 24pt;
+}
+
+ul button{
+    width: 150px;
+    height: 150px;
+    border-radius: 75px;
+    font-size: 24pt;
+    
+}
+/* #back{
+    height: 75px;
+} */
+input{
+    width: 90%;
+    height: 5%;
+    font-size: 32pt;
+}
+ul{
+    list-style-type: none;
+    /* border-style: solid;
+    border-width: 2px; */
+    width: auto;
+    padding: 5px;
+    display: inline-block;
+    margin:0;
+}
+ul li{
+    float: left;
+}
+#implications li{
+    float: none;
+}
+.policy-on-board{
+    display: inline-block;
+    margin: 5px;
+    padding: 2px;
+    text-align: center;
+    background-color:darkgray;
+    font-size: 24px;
+    border-style: solid;
+    border-width: 2px;
+}

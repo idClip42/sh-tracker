@@ -2,13 +2,14 @@
 const screens = {
     nameEntry : undefined,
     menu : undefined,
-    playerList : undefined,
+    // playerList : undefined,
     admin : undefined,
     check : undefined,
     all : undefined,
 };
 
 const buttons = {
+    autofill : undefined,
     nameSubmit : undefined,
     goPlayerList : undefined,
     goAdmin : undefined,
@@ -21,6 +22,7 @@ const buttons = {
 };
 
 const elements = {
+    playerList : undefined,
     teamButtons : undefined,
     playerButtons : undefined,
     newPresident : undefined,
@@ -105,19 +107,19 @@ const Player = function(name){
 
     this.listElement = document.createElement("li");
     this.listElement.innerHTML = this.name;
-    let ol = screens.playerList.getElementsByTagName("ol")[0];
+    let ol = elements.playerList;
     ol.appendChild(this.listElement);
 
     let confirmFascistButton = document.createElement("button");
-    confirmFascistButton.innerHTML = "Confirm Fascist";
+    confirmFascistButton.innerHTML = "Confirm";
     confirmFascistButton.style.backgroundColor = COLOR.FASCIST;
-    confirmFascistButton.onclick = this.ConfirmFascist.bind(this);
+    confirmFascistButton.ontouchend = this.ConfirmFascist.bind(this);
     this.listElement.appendChild(confirmFascistButton);
 
     let confirmLiberalButton = document.createElement("button");
-    confirmLiberalButton.innerHTML = "Confirm Liberal";
+    confirmLiberalButton.innerHTML = "Confirm";
     confirmLiberalButton.style.backgroundColor = COLOR.LIBERAL;
-    confirmLiberalButton.onclick = this.ConfirmLiberal.bind(this);
+    confirmLiberalButton.ontouchend = this.ConfirmLiberal.bind(this);
     this.listElement.appendChild(confirmLiberalButton);
 
 };
@@ -156,18 +158,43 @@ const Policy = function(adminArray){
 
 
 window.onload = function(){
+    // document.addEventListener("touchstart", function(e){
+    //     e.preventDefault();
+    // });
+    document.addEventListener("touchend", function(e){
+        e.preventDefault();
+    });
+    let inputs = document.getElementsByTagName("input");
+    for(let i in inputs)
+    inputs[i].ontouchend = function(e){
+        inputs[i].focus();
+    }
+    // document.addEventListener("touchmove", function(e){
+    //     e.preventDefault();
+    // });
+    // document.onscroll = function(e){
+    //     e.preventDefault();
+    // };
     getDOMElements();
     setUpMenus();
+
+    buttons.autofill.ontouchend = function(){
+        const names = ["Alex", "Bob", "Carol", "Dave", "Edith", "Fred", "Gwen", "Harry", "Ingrid", "Jimmy"];
+        let elements = screens.nameEntry.getElementsByTagName("input");
+        for(let e in elements)
+            elements[e].value = names[e];
+    }
 };
 
 const getDOMElements = function(){
     screens.nameEntry = document.getElementById("name-entry");
     screens.menu = document.getElementById("menu");
-    screens.playerList = document.getElementById("player-list");
+    // screens.playerList = document.getElementById("player-list");
     screens.admin = document.getElementById("administration");
     screens.check = document.getElementById("check");
     screens.all = document.getElementById("all-menu");
 
+    buttons.autofill = document.getElementById("autofill");
     buttons.nameSubmit = document.getElementById("name-submit");
     buttons.goPlayerList = document.getElementById("go-to-player-list");
     buttons.goAdmin = document.getElementById("go-to-administration");
@@ -178,6 +205,7 @@ const getDOMElements = function(){
     buttons.undo = document.getElementById("undoButton");
     buttons.confirm = document.getElementById("confirmButton");
 
+    elements.playerList = document.getElementById("player-list");
     elements.teamButtons = document.getElementById("team-buttons");
     elements.playerButtons = document.getElementById("player-buttons");
     elements.newPresident = document.getElementById("newPresident");
@@ -200,17 +228,27 @@ const goToScreen = function(screen){
         screens[key].hidden = true;
     screen.hidden = false;
     screens.all.hidden = false;
+    // screens.all.style.display = "inline-block";
+
+    if(screen === screens.menu){
+        elements.playerButtons.style.display = "none";
+        elements.teamButtons.style.display = "none";
+        buttons.undo.style.display = "none";
+        buttons.back.style.display = "none";
+    } else {
+        buttons.back.style.display = "inherit";
+    }
 };
 
 const setUpMenus = function(){
     goToScreen(screens.nameEntry);
     screens.all.hidden = true;
 
-    buttons.nameSubmit.onclick = function(){ submitNames(goToScreen); };
-    buttons.back.onclick = function(){ goToScreen(screens.menu); };
-    buttons.goPlayerList.onclick = function(){ goToScreen(screens.playerList); };
-    buttons.goAdmin.onclick = function(){ goToScreen(screens.admin); AdministrationTracker(); };
-    buttons.goCheck.onclick = function(){ goToScreen(screens.check); CheckTracker(); };
+    buttons.nameSubmit.ontouchend = function(){ submitNames(goToScreen); };
+    buttons.back.ontouchend = function(){ goToScreen(screens.menu); };
+    // buttons.goPlayerList.ontouchend = function(){ goToScreen(screens.playerList); };
+    buttons.goAdmin.ontouchend = function(){ goToScreen(screens.admin); AdministrationTracker(); };
+    buttons.goCheck.ontouchend = function(){ goToScreen(screens.check); CheckTracker(); };
 };
 
 const submitNames = function(leaveScreen){
@@ -242,16 +280,16 @@ const getPlayerByName = function(name){
 
 const setNameButtonsFunction = function(func){
     for(let p in players){
-        players[p].button.onclick = func.bind(players[p]);
+        players[p].button.ontouchend = func.bind(players[p]);
     }
 };
 
 const clearTopButtonFunctions = function(){
     setNameButtonsFunction(function(){});
-    buttons.liberal.onclick = function(){};
-    buttons.fascist.onclick = function(){};
-    buttons.undo.onclick = function(){};
-    buttons.confirm.onclick = function(){};
+    buttons.liberal.ontouchend = function(){};
+    buttons.fascist.ontouchend = function(){};
+    buttons.undo.ontouchend = function(){};
+    buttons.confirm.ontouchend = function(){};
 }
 
 const AdministrationTracker = function(){
@@ -281,15 +319,21 @@ const AdministrationTracker = function(){
         }
 
         clearTopButtonFunctions();
-        buttons.undo.onclick = function(){ if(admin.length > 0) admin.pop(); update();};
+        buttons.undo.ontouchend = function(){ if(admin.length > 0) admin.pop(); update();};
         if(admin.length < 2){
             setNameButtonsFunction(function(){ admin.push(this.name); update(); });
+            elements.playerButtons.style.display = "inherit";
+            elements.teamButtons.style.display = "none";
+            buttons.undo.style.display = "inherit";
         } else {
-            buttons.liberal.onclick = function(){ admin.push(true); update(); };
-            buttons.fascist.onclick = function(){ admin.push(false); update(); };
+            buttons.liberal.ontouchend = function(){ admin.push(true); update(); };
+            buttons.fascist.ontouchend = function(){ admin.push(false); update(); };
+            elements.playerButtons.style.display = "none";
+            elements.teamButtons.style.display = "inherit";
+            buttons.undo.style.display = "inherit";
         }
 
-        buttons.confirm.onclick = function(){
+        buttons.confirm.ontouchend = function(){
             if(admin.length !== 8)
                 return;
 
@@ -372,15 +416,21 @@ const CheckTracker = function(){
         }
 
         clearTopButtonFunctions();
-        buttons.undo.onclick = function(){ if(check.length > 0) check.pop(); update();};
+        buttons.undo.ontouchend = function(){ if(check.length > 0) check.pop(); update();};
         if(check.length < 2){
             setNameButtonsFunction(function(){ check.push(this.name); update(); });
+            elements.playerButtons.style.display = "inherit";
+            elements.teamButtons.style.display = "none";
+            buttons.undo.style.display = "inherit";
         } else {
-            buttons.liberal.onclick = function(){ check.push(true); update(); };
-            buttons.fascist.onclick = function(){ check.push(false); update(); };
+            buttons.liberal.ontouchend = function(){ check.push(true); update(); };
+            buttons.fascist.ontouchend = function(){ check.push(false); update(); };
+            elements.playerButtons.style.display = "none";
+            elements.teamButtons.style.display = "inherit";
+            buttons.undo.style.display = "inherit";
         }
 
-        buttons.confirm.onclick = function(){
+        buttons.confirm.ontouchend = function(){
             if(check.length !== 3)
                 return;
 
