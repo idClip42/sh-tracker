@@ -20,13 +20,40 @@ p{
     margin: 5px;
     padding: 5px;
 }
-#all-menu{
-    height: auto;
+#input-menu{
+    height: 30%;
     /* display: inline-block; */
+    margin: 2%;
+    width: 96%;
+    padding: 0;
 }
-#policy-list{
-    /* min-height: 200px; */
+#administration, #check{
+    /* height: 20%; */
+    margin: 2%;
+    width: 96%;
+    height: 38%;
+    padding: 0;
+}
+#menu{
+    margin: 2%;
+    width: 96%;
+    height: 69%;
+    padding: 0;
+}
 
+#the-board{
+    height: 20%;
+    overflow: scroll;
+    font-size: 8px;
+    padding: 0;
+    margin: 2%;
+    width: 96%;
+    /* position: relative; */
+}
+#player-list{
+    columns: 2;
+    list-style-type: none;
+    /* overflow: hidden; */
 }
 #player-list button{
     width: 100px;
@@ -36,6 +63,12 @@ p{
 img{
     width : 80px;
     margin : 5px;
+}
+img.smaller{
+    width : 50px;
+}
+img.smallest{
+    width : 35px;
 }
 button{
     width: 200px;
@@ -51,6 +84,13 @@ button{
     height: 120px;
     border-radius: 60px;
     font-size: 24pt;
+}
+
+.menu-button{
+    width: auto;
+    height: auto;
+    padding: 15px;
+    border-radius: 50px;
 }
 
 ul button{
@@ -85,7 +125,8 @@ ul li{
 }
 .policy-on-board{
     display: inline-block;
-    margin: 5px;
+    /* margin: 5px; */
+    margin: 0;
     padding: 2px;
     text-align: center;
     background-color:darkgray;
@@ -93,4 +134,13 @@ ul li{
     border-style: solid;
     border-width: 2px;
     width: 110px;
+    max-height: 90%;
+}
+.policy-wide{
+    /* position: absolute; 
+    bottom: 0; 
+    right: 0; */
+    float: right;
+    width: 200px;
+    font-size: 30px;
 }

@@ -27,29 +27,15 @@
         <button id="name-submit">Begin</button>
     </div>
 
-    <div id="all-menu">
-        <ul id="policy-list"></ul>
-        <!-- <br> -->
-        <ul id="player-buttons"></ul>
-        <!-- <br> -->
-        <ul id="team-buttons">
-            <li><button id="libButton"><img src="images/lib.png"></button></li>
-            <li><button id="facButton"><img src="images/fac.png"></button></li>
-            <!-- <li><button id="undoButton">Undo</button></li> -->
-            <li><button id="confirmButton">Confirm</button></li>
-        </ul>
-        <!-- <br> -->
-        <span>
-            <button id="undoButton">Undo</button>
-            <button id="back">Back</button>
-        </span>
-        <!-- <br> -->
-    </div>
+
+    <div id="the-board"></div>
+
 
     <div id="menu">
         <!-- <button id="go-to-player-list">Player List</button> -->
-        <button id="go-to-administration">Administration</button>
-        <button id="go-to-check">Check Player</button>
+        <button id="go-to-administration" class="menu-button">Administration</button>
+        <button id="go-to-check" class="menu-button">Check Player</button>
+        <button id="go-to-flip" class="menu-button">Flip Policy</button>
         <br>
         <ul id="implications"></ul>
         <br>
@@ -70,9 +56,33 @@
         <b>Result: </b><u id="check-result"></u>
     </div>
 
+    <div id="flip">
+        <b>Result: </b><u id="flip-result"></u>
+    </div>
+
+    <div id="input-menu">
+        <!-- <ul id="policy-list"></ul> -->
+        <!-- <br> -->
+        <ul id="player-buttons"></ul>
+        <!-- <br> -->
+        <ul id="team-buttons">
+            <li><button id="libButton"><img src="images/lib.png"></button></li>
+            <li><button id="facButton"><img src="images/fac.png"></button></li>
+            <!-- <li><button id="undoButton">Undo</button></li> -->
+            <li><button id="confirmButton">Confirm</button></li>
+        </ul>
+        <!-- <br> -->
+        <span>
+            <button id="undoButton">Undo</button>
+            <button id="back">Back</button>
+        </span>
+        <!-- <br> -->
+    </div>
+
     <div id="images" hidden>
         <img id="libImg" src="images/lib.png">
         <img id="facImg" src="images/fac.png">
+        <img id="mixImg" src="images/mix.png">
     </div>
 
 </body>
