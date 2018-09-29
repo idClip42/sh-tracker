@@ -1,4 +1,4 @@
-
+"use strict"
 
 const screens = {
     nameEntry : undefined,
@@ -7,6 +7,7 @@ const screens = {
     admin : undefined,
     check : undefined,
     flip : undefined,
+    know : undefined,
     all : undefined,
     policyList : undefined,
 };
@@ -18,6 +19,7 @@ const buttons = {
     goAdmin : undefined,
     goCheck : undefined,
     goFlip : undefined,
+    goKnow : undefined,
     back : undefined,
     liberal : undefined,
     fascist : undefined,
@@ -38,6 +40,8 @@ const elements = {
     investigatee : undefined,
     checkResult : undefined,
     flipResult : undefined,
+    knowPlayer : undefined,
+    knowResult : undefined,
     implications : undefined,
     probabilityTracker : undefined,
 };
@@ -50,8 +54,11 @@ const images = {
 
 const players = [];
 const policies = [];
-const flips = [];
+// const flips = [];
 let cardCount = 17;
+// let presidentsThisDeck = [];
+let policiesThisDeck = [];
+let deckIsSuspicious = false;
 
 const GAME = {
     MIN_PLAYERS : 5,
@@ -64,6 +71,7 @@ const COLOR = {
     LIBERAL: "lightskyblue",
     FASCIST: "tomato",
     CONTENTION: "khaki",
+    SUSPICION: "peru",
 };
 
 
@@ -75,6 +83,8 @@ const Player = function(name){
     this.confirmedLiberal = false;
     this.confirmedFascist = false;
     this.inContention = false;
+    this.inContentionWith = [];
+    this.suspicious = false;
     this.policies = [];
     this.notHitler = false;
 
@@ -83,6 +93,9 @@ const Player = function(name){
         this.confirmedLiberal = true;
         this.button.style.backgroundColor = COLOR.LIBERAL;
         this.listElement.style.backgroundColor = COLOR.LIBERAL;
+
+        this.inContention = false;
+        this.ConfirmContentionFascists();
 
         for(let c in this.checkedPlayers){
             let check = this.checkedPlayers[c];
@@ -106,13 +119,20 @@ const Player = function(name){
         this.implicatedPlayers = [];
         UpdateImplications();
     };
-    this.Contention = function(){
+    this.Contention = function(other){
+        this.inContentionWith.push(other);
         if(this.confirmedFascist === false && this.confirmedLiberal === false){
             this.inContention = true;
             this.button.style.backgroundColor = COLOR.CONTENTION;
             this.listElement.style.backgroundColor = COLOR.CONTENTION;
+        } else if(this.confirmedLiberal === true){
+            this.ConfirmContentionFascists();
         }
-    }
+    };
+    this.ConfirmContentionFascists = function(){
+        for(let c in this.inContentionWith)
+            this.inContentionWith[c].ConfirmFascist();
+    };
     this.NotHitler = function(){
         this.notHitler = true;
         this.button.innerHTML = "*" + this.button.innerHTML;
@@ -124,8 +144,20 @@ const Player = function(name){
             liberal: liberal
         });
         if(this.confirmedLiberal === true)
-            this.ConfirmLiberal();
+            if(liberal === true)
+                player.ConfirmLiberal();
+            else
+                player.ConfirmFascist();
+        if(player.confirmedFascist === true && liberal === true)
+            this.ConfirmFascist();
     };
+    this.SetSuspicious = function(){
+        if(this.confirmedLiberal === false && this.confirmedFascist === false && this.inContention === false){
+            this.suspicious = true;
+            this.button.style.backgroundColor = COLOR.SUSPICION;
+            this.listElement.style.backgroundColor = COLOR.SUSPICION;
+        }
+    }
 
     this.button.innerHTML = this.name;
     let li = document.createElement("li");
@@ -165,20 +197,41 @@ const Player = function(name){
 
 };
 const Policy = function(adminArray){
-    this.president = getPlayerByName(adminArray[0]);
-    this.chancellor = getPlayerByName(adminArray[1]);
-    this.threePolicies = [adminArray[2], adminArray[3], adminArray[4]];
-    this.twoPolicies = [adminArray[5], adminArray[6]];
-    this.playedLiberal = adminArray[7];
-    this.contention = false;
 
-    this.president.policies.push(this);
-    this.chancellor.policies.push(this);
+    this.random = adminArray.length === 1;
+
+    if(this.random === false){
+        this.president = getPlayerByName(adminArray[0]);
+        this.chancellor = getPlayerByName(adminArray[1]);
+        this.threePolicies = [adminArray[2], adminArray[3], adminArray[4]];
+        this.twoPolicies = [adminArray[5], adminArray[6]];
+        this.playedLiberal = adminArray[7];
+
+        this.president.policies.push(this);
+        this.chancellor.policies.push(this);
+    } else {
+        this.president = "Random";
+        this.chancellor = "Random";
+        this.threePolicies = [];
+        this.twoPolicies = [];
+        this.playedLiberal = adminArray[0];
+    }
+    
+    this.contention = false;
+    this.hadLib = false;
+    this.hadFac = false;
+    this.element = undefined;
+
+    this.SetSuspicious = function(){
+        if(this.contention === false)
+            this.element.style.backgroundColor = COLOR.SUSPICION;
+    }
+
 
     if(this.threePolicies.includes(true) !== this.twoPolicies.includes(true)){
         this.contention = true;
-        this.president.Contention();
-        this.chancellor.Contention();
+        this.president.Contention(this.chancellor);
+        this.chancellor.Contention(this.president);
 
         if(this.president.confirmedLiberal === true){
             this.chancellor.ConfirmFascist();
@@ -194,6 +247,11 @@ const Policy = function(adminArray){
 
     if(this.threePolicies.includes(true) && this.twoPolicies.includes(true) && this.playedLiberal === false)
         this.chancellor.ConfirmFascist();
+
+    if(this.threePolicies.includes(true) || this.twoPolicies.includes(true) || this.playedLiberal === true)
+        this.hadLib = true;
+    if(this.threePolicies.includes(false) || this.twoPolicies.includes(false) || this.playedLiberal === false)
+        this.hadFac = true;
 }
 
 
@@ -206,9 +264,11 @@ window.onload = function(){
         e.preventDefault();
     });
     let inputs = document.getElementsByTagName("input");
-    for(let i in inputs)
-    inputs[i].ontouchend = function(e){
-        inputs[i].focus();
+    for(let i in inputs){
+        if(isNaN(parseInt(i))) continue;
+        inputs[i].ontouchend = function(e){
+            inputs[i].focus();
+        }
     }
     // document.addEventListener("touchmove", function(e){
     //     e.preventDefault();
@@ -220,10 +280,12 @@ window.onload = function(){
     setUpMenus();
 
     buttons.autofill.ontouchend = function(){
-        const names = ["Alex", "Bob", "Carol", "Dave", "Edith", "Fred", "Gwen", "Harry", "Ingrid", "Jimmy"];
+        const names = ["Alex", "Mike", "Tarana", "Joe", "Katie", "Larry", "Chris", "Jeff", "Jon", "Connor"];
         let elements = screens.nameEntry.getElementsByTagName("input");
-        for(let e in elements)
+        for(let e in elements){
+            if(isNaN(parseInt(e))) continue;
             elements[e].value = names[e];
+        }
     }
 };
 
@@ -234,6 +296,7 @@ const getDOMElements = function(){
     screens.admin = document.getElementById("administration");
     screens.check = document.getElementById("check");
     screens.flip = document.getElementById("flip");
+    screens.know = document.getElementById("know");
     screens.all = document.getElementById("input-menu");
 
     buttons.autofill = document.getElementById("autofill");
@@ -242,6 +305,7 @@ const getDOMElements = function(){
     buttons.goAdmin = document.getElementById("go-to-administration");
     buttons.goCheck = document.getElementById("go-to-check");
     buttons.goFlip = document.getElementById("go-to-flip");
+    buttons.goKnow = document.getElementById("go-to-know");
     buttons.back = document.getElementById("back");
     buttons.liberal = document.getElementById("libButton");
     buttons.fascist = document.getElementById("facButton");
@@ -262,6 +326,8 @@ const getDOMElements = function(){
     elements.investigatee = document.getElementById("investigatee");
     elements.checkResult = document.getElementById("check-result");
     elements.flipResult = document.getElementById("flip-result");
+    elements.knowPlayer = document.getElementById("know-player");
+    elements.knowResult = document.getElementById("know-result");
     elements.implications = document.getElementById("implications");
 
     images.liberal = document.getElementById("libImg");
@@ -289,7 +355,8 @@ const goToScreen = function(screen){
         screens.all.style.display = "block";
     }
 
-    UpdateProbabilities();
+    UpdateProbabilities(policiesThisDeck.length === 0);
+    CheckContention();
 };
 
 const setUpMenus = function(){
@@ -304,6 +371,7 @@ const setUpMenus = function(){
     buttons.goAdmin.ontouchend = function(){ goToScreen(screens.admin); AdministrationTracker(); };
     buttons.goCheck.ontouchend = function(){ goToScreen(screens.check); CheckTracker(); };
     buttons.goFlip.ontouchend = function(){ goToScreen(screens.flip); FlipTracker(); };
+    buttons.goKnow.ontouchend = function(){ goToScreen(screens.know); KnowTracker(); };
 };
 
 const submitNames = function(leaveScreen){
@@ -438,33 +506,37 @@ const CheckContention = function(){
 };
 
 const AddPolicyToBoard = function(policy){
-    let prez = policy.president.notHitler ? "*" + policy.president.name : policy.president.name;
-    let chan = policy.chancellor.notHitler ? "*" + policy.chancellor.name : policy.chancellor.name;
+
     let isLiberal = policy.playedLiberal;
-
-    let otherCards = GetOtherCardImgs(policy);
-    let oc1 = otherCards[0];
-    oc1.className = "smallest";
-    let oc2 = otherCards[1];
-    oc2.className = "smallest";
-
     let div = document.createElement("div");
     div.className = "policy-on-board";
-    div.innerHTML = "<b>" + prez + "</b><br>" + chan + "<br>";
-    div.appendChild(oc1);
-    div.appendChild(oc2);
-    div.innerHTML += "<br>";
+
+    if(policy.random === true){
+        div.innerHTML = "<b>Random</b><br>";
+    } else {
+        let prez = policy.president.notHitler ? "*" + policy.president.name : policy.president.name;
+        let chan = policy.chancellor.notHitler ? "*" + policy.chancellor.name : policy.chancellor.name;
+        let otherCards = GetOtherCardImgs(policy);
+        let oc1 = otherCards[0];
+        oc1.className = "smallest";
+        let oc2 = otherCards[1];
+        oc2.className = "smallest";
+        div.innerHTML = "<b>" + prez + "</b><br>" + chan + "<br>";
+        div.appendChild(oc1);
+        div.appendChild(oc2);
+        div.innerHTML += "<br>";
+    }
+
     if(policy.contention)
         div.style.backgroundColor = COLOR.CONTENTION;
     div.appendChild(GetPolicyImg(isLiberal));
     screens.policyList.appendChild(div);
+    policy.element = div;
+
+    AddToPoliciesThisDeck(policy);
 
     cardCount -= 3;
-    if(cardCount < 3){
-        screens.policyList.innerHTML += "<br>";
-        cardCount = 17 - policies.length;
-        AddProbabilityTracker();
-    }
+    CheckCardCount();
 
     screens.policyList.scrollTo(0,screens.policyList.scrollHeight);
 }
@@ -515,15 +587,15 @@ const CheckTracker = function(){
             let investigatee = getPlayerByName(check[1]);
             let isLiberal = check[2];
 
-            investigator.Check(investigatee, isLiberal);
             if(isLiberal === true){
                 // investigator.implicatedPlayers.push(investigatee);
                 investigatee.implicatedPlayers.push(investigator);
                 UpdateImplications();
             } else {
-                investigator.Contention();
-                investigatee.Contention();
+                investigator.Contention(investigatee);
+                investigatee.Contention(investigator);
             }
+            investigator.Check(investigatee, isLiberal);
             
             goToScreen(screens.menu);
         }
@@ -555,7 +627,9 @@ const FlipTracker = function(){
 
             clearTopButtonFunctions();
             
-            flips.push(flip);
+            // flips.push(flip);
+            let inputArray = [flip];
+            policies.push(new Policy(inputArray));
 
             let div = document.createElement("div");
             div.className = "policy-on-board";
@@ -564,13 +638,63 @@ const FlipTracker = function(){
             screens.policyList.appendChild(div);
 
             cardCount -= 1;
-            if(cardCount < 3){
-                screens.policyList.innerHTML += "<br>";
-                cardCount = 17 - policies.length;
-                AddProbabilityTracker();
-            }
+            CheckCardCount();
 
             screens.policyList.scrollTo(0,screens.policyList.scrollHeight);
+            
+            goToScreen(screens.menu);
+        }
+
+    }
+    update();
+};
+
+const KnowTracker = function(){
+    let check = [];
+
+    let update = function(){
+
+        check.length = Math.min(check.length, 2);
+
+        elements.knowPlayer.innerHTML = "";
+        elements.knowResult.innerHTML = ""
+
+        for(let n = 0; n < check.length; ++n){
+            if(n === 0)
+                elements.knowPlayer.innerHTML = check[n];
+            else if(n === 1)
+                elements.knowResult.appendChild(GetPolicyImg(check[n]));
+        }
+
+        clearTopButtonFunctions();
+        buttons.undo.ontouchend = function(){ if(check.length > 0) check.pop(); update();};
+        if(check.length < 1){
+            setNameButtonsFunction(function(){ check.push(this.name); update(); });
+            elements.playerButtons.style.display = "inherit";
+            elements.teamButtons.style.display = "none";
+            buttons.undo.style.display = "inherit";
+        } else {
+            buttons.liberal.ontouchend = function(){ check.push(true); update(); };
+            buttons.fascist.ontouchend = function(){ check.push(false); update(); };
+            elements.playerButtons.style.display = "none";
+            elements.teamButtons.style.display = "inherit";
+            buttons.undo.style.display = "inherit";
+        }
+
+        buttons.confirm.ontouchend = function(){
+            if(check.length !== 2)
+                return;
+
+            clearTopButtonFunctions();
+
+            let player = getPlayerByName(check[0]);
+            let isLiberal = check[1];
+
+            if(isLiberal === true){
+                player.ConfirmLiberal();
+            } else {
+                player.ConfirmFascist();
+            }
             
             goToScreen(screens.menu);
         }
@@ -617,9 +741,13 @@ const GetPolicyImg = function(isLiberal){
 }
 
 const GetOtherCardImgs = function(policy){
+
     let pLibs = 0;
     let pFacs = 0;
     let result = [];
+
+    if(policy.random ===  true)
+        return result;
 
     let three = policy.threePolicies;
     let two = policy.twoPolicies;
@@ -654,7 +782,7 @@ const AddProbabilityTracker = function(){
     screens.policyList.appendChild(elements.probabilityTracker);
 }
 
-const UpdateProbabilities = function(){
+const UpdateProbabilities = function(newShuffle = false){
     if(elements.probabilityTracker === undefined)
         AddProbabilityTracker();
 
@@ -683,19 +811,42 @@ const UpdateProbabilities = function(){
     let totalCount = 17;
     let deckCount = 17;
     for(let p in policies){
-        let policy = policies[p];
-        let cardImgs = GetOtherCardImgs(policy);
 
-        if(policy.playedLiberal === true) ++officialLibCount;
-        else ++officialFacCount;
+        if(deckCount < 3){
+            deckCount = totalCount;
+            resetOpPes();
+        }
+
+        let policy = policies[p];
+
+        if(policy.playedLiberal === true) {
+            ++officialLibCount;
+            addLib();
+        }
+        else {
+            ++officialFacCount;
+            addFac();
+        }
+
+        if(policy.random === true){
+            totalCount -= 1;
+            deckCount -= 1;
+            continue;
+        }
         
+        let cardImgs = GetOtherCardImgs(policy);
         if(policy.contention === false){
-            for(let t in policy.threePolicies){
-                if(policy.threePolicies[t] === true){
-                    addLib();
-                } else {
-                    addFac();
-                }
+            // for(let t in policy.threePolicies){
+            //     if(policy.threePolicies[t] === true){
+            //         addLib();
+            //     } else {
+            //         addFac();
+            //     }
+            // }
+            for(let c in cardImgs){
+                let card = cardImgs[c].src === images.liberal.src ? true : false;
+                if(card === true) addLib();
+                else addFac();
             }
         } else {
             let firstCard = cardImgs[0].src === images.liberal.src ? true : false;
@@ -707,34 +858,77 @@ const UpdateProbabilities = function(){
 
         totalCount -= 1;
         deckCount -= 3;
-        if(deckCount < 3){
-            deckCount = totalCount;
-            resetOpPes();
-        }
     }
-    for(let f in flips){
-        if(flips[f] === true){
-            ++officialLibCount;
-            addLib();
-        } else {
-            ++officialFacCount;
-            addFac();
-        }
-        totalCount -= 1;
-        deckCount -= 1;
-        if(deckCount < 3){
-            deckCount = totalCount;
-            resetOpPes();
-        }
-    }
+    // for(let f in flips){
+    //     if(flips[f] === true){
+    //         ++officialLibCount;
+    //         addLib();
+    //     } else {
+    //         ++officialFacCount;
+    //         addFac();
+    //     }
+    //     totalCount -= 1;
+    //     deckCount -= 1;
+    // }
+    if(newShuffle === true) resetOpPes();
 
     let officialLibPercentage = (GAME.LIB_POLS - officialLibCount) / (GAME.LIB_POLS + GAME.FAC_POLS - officialLibCount - officialFacCount);
     let optimisticLibPercentage = (GAME.LIB_POLS - optimisticLibCount) / cardCount;
     let pessimisticLibPercentage = (GAME.LIB_POLS - pessimisticLibCount) / cardCount;
 
-    let realLib = "<b>General L Probability:</b> " + parseInt(officialLibPercentage * 100) + "%<br>";
-    let fakeLib = "<b>L Cards Guess:</b> " + (GAME.LIB_POLS - optimisticLibCount) + " - " + (GAME.LIB_POLS - pessimisticLibCount) + "<br>";
-    let fakeFac = "<b>F Cards Guess:</b> " + (GAME.FAC_POLS - pessimisticFacCount) + " - " + (GAME.FAC_POLS - optimisticFacCount) + "<br>";
+    // let realLib = "<b>General L Probability:</b> " + parseInt(officialLibPercentage * 100) + "%<br>";
+    let fakeLib = "<b><u>L Cards</u></b><br>" + (GAME.LIB_POLS - optimisticLibCount) + " -> " + (GAME.LIB_POLS - pessimisticLibCount) + "<br>" + parseInt(optimisticLibPercentage*100) + "%->" + parseInt(pessimisticLibPercentage*100) + "%<br>";
+    let fakeFac = "<b><u>F Cards</u></b><br>" + (GAME.FAC_POLS - pessimisticFacCount) + " -> " + (GAME.FAC_POLS - optimisticFacCount) + "<br>" + parseInt((1-optimisticLibPercentage)*100) + "%->" + parseInt((1-pessimisticLibPercentage)*100) + "%<br>";
 
-    elements.probabilityTracker.innerHTML = realLib + fakeLib + fakeFac;
+    elements.probabilityTracker.innerHTML = fakeLib + fakeFac;
+
+    // console.log(pessimisticFacCount, optimisticFacCount);
+
+    // if()
+
+
+
+    // if(cardCount < 3){
+        // let officialRemainingLibs = GAME.LIB_POLS - officialLibCount;
+        // let officialRemainingFacs = GAME.FAC_POLS - officialFacCount; 
+
+    // let libLie = optimisticLibCount > GAME.LIB_POLS;
+    let libLie = pessimisticLibCount > GAME.LIB_POLS;
+    // let facLie = pessimisticFacCount > GAME.FAC_POLS;
+    let facLie = optimisticFacCount > GAME.FAC_POLS;
+
+    // console.log(pessimisticLibCount, optimisticFacCount);
+    // console.log(libLie, facLie);
+
+    if(deckIsSuspicious === false && (libLie || facLie)){
+        for(let p in policiesThisDeck){
+            let policy = policiesThisDeck[p];
+            if((policy.hadFac === true && facLie === true) || (policy.hadLib === true && libLie === true)){
+                policy.president.SetSuspicious();
+                policy.SetSuspicious();
+            }
+        }
+        deckIsSuspicious = true;
+    }
+
+        // if(pessimisticLibCount )
+
+        // if(GAME.LIB_POLS - officialRemainingLibs < pessimisticLibCount || officialRemainingLibs > optimisticLibCount)
+    // }
+
+}
+
+const CheckCardCount = function(){
+    if(cardCount < 3){
+        UpdateProbabilities();
+        screens.policyList.innerHTML += "<br>";
+        cardCount = 17 - policies.length;
+        policiesThisDeck = [];
+        deckIsSuspicious = false;
+        AddProbabilityTracker();
+    }
+}
+
+const AddToPoliciesThisDeck = function(policy){
+    policiesThisDeck.push(policy);
 }

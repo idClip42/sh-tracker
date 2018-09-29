@@ -27,7 +27,7 @@ p{
     width: 96%;
     padding: 0;
 }
-#administration, #check{
+#administration, #check, #flip, #know{
     /* height: 20%; */
     margin: 2%;
     width: 96%;
@@ -141,6 +141,16 @@ ul li{
     bottom: 0; 
     right: 0; */
     float: right;
-    width: 200px;
+    width: 220px;
     font-size: 30px;
+}
+
+#confirmButton{
+    background-color: lawngreen;
+}
+#undoButton{
+    background-color: lightslategray;
+}
+#back{
+    background-color: lightslategray;
 }
