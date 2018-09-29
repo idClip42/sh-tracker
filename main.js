@@ -91,8 +91,11 @@ const Player = function(name){
     this.ConfirmLiberal = function(){
         // console.log(this);
         this.confirmedLiberal = true;
-        this.button.style.backgroundColor = COLOR.LIBERAL;
-        this.listElement.style.backgroundColor = COLOR.LIBERAL;
+        // this.button.style.backgroundColor = COLOR.LIBERAL;
+        // this.listElement.style.backgroundColor = COLOR.LIBERAL;
+        // SetBackgroundColor(this.button, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+        // SetBackgroundColor(this.listElement, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+        this.Color();
 
         this.inContention = false;
         this.ConfirmContentionFascists();
@@ -110,8 +113,13 @@ const Player = function(name){
     };
     this.ConfirmFascist = function(){
         this.confirmedFascist = true;
-        this.button.style.backgroundColor = COLOR.FASCIST;
-        this.listElement.style.backgroundColor = COLOR.FASCIST;
+        // this.button.style.backgroundColor = COLOR.FASCIST;
+        // this.listElement.style.backgroundColor = COLOR.FASCIST;
+        // SetBackgroundColor(this.button, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+        // SetBackgroundColor(this.listElement, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+        this.Color();
+
+        this.RemoveContentionFromOthers();
 
         for(let i in this.implicatedPlayers)
             this.implicatedPlayers[i].ConfirmFascist();
@@ -119,19 +127,61 @@ const Player = function(name){
         this.implicatedPlayers = [];
         UpdateImplications();
     };
-    this.Contention = function(other){
+    this.Contention = function(other, inCon = true){
+
+        if(inCon === false){
+            this.inContentionWith = [];
+            this.inContention = false;
+            this.Color();
+            return;
+        }
+
         this.inContentionWith.push(other);
         if(this.confirmedFascist === false && this.confirmedLiberal === false){
             this.inContention = true;
-            this.button.style.backgroundColor = COLOR.CONTENTION;
-            this.listElement.style.backgroundColor = COLOR.CONTENTION;
+            // this.button.style.backgroundColor = COLOR.CONTENTION;
+            // this.listElement.style.backgroundColor = COLOR.CONTENTION;
+            // SetBackgroundColor(this.button, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+            // SetBackgroundColor(this.listElement, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
         } else if(this.confirmedLiberal === true){
             this.ConfirmContentionFascists();
         }
+        this.Color();
     };
     this.ConfirmContentionFascists = function(){
         for(let c in this.inContentionWith)
             this.inContentionWith[c].ConfirmFascist();
+    };
+    this.RemoveContentionFromOthers = function(){
+        // console.log("RemoveContentionFromOthers");
+        for(let c in this.inContentionWith){
+            // console.log(this.inContentionWith[c].name);
+            this.inContentionWith[c].RemoveContention(this);
+            // let other = this.inContentionWith[c];
+            // for(let o in other.inContentionWith){
+            //     let check = other.inContentionWith[o];
+            //     if(check === this){
+            //         other.inContentionWith.splice(o, 1);
+            //         break;
+            //     }
+            // }
+        }
+        this.Contention(false);
+    };
+    this.RemoveContention = function(other){
+        // console.log("\t" + other.name);
+        // console.log(this.inContentionWith[0]);
+        for(let c in this.inContentionWith){
+            if(this.inContentionWith[c] === other){
+                // console.log("Match!");
+                this.inContentionWith.splice(c, 1);
+                break;
+            }
+        }
+        // console.log(this.name, this.inContentionWith.length);
+        if(this.inContentionWith.length === 0)
+            this.inContention = false;
+        this.Color();
     };
     this.NotHitler = function(){
         this.notHitler = true;
@@ -151,12 +201,23 @@ const Player = function(name){
         if(player.confirmedFascist === true && liberal === true)
             this.ConfirmFascist();
     };
-    this.SetSuspicious = function(){
-        if(this.confirmedLiberal === false && this.confirmedFascist === false && this.inContention === false){
+    this.SetSuspicious = function(underSus = true){
+        if(underSus === false)
+            this.suspicious = underSus;
+        else if(this.confirmedLiberal === false && this.confirmedFascist === false){
             this.suspicious = true;
-            this.button.style.backgroundColor = COLOR.SUSPICION;
-            this.listElement.style.backgroundColor = COLOR.SUSPICION;
+            // this.button.style.backgroundColor = COLOR.SUSPICION;
+            // this.listElement.style.backgroundColor = COLOR.SUSPICION;
+            // SetBackgroundColor(this.button, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+            // SetBackgroundColor(this.listElement, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
         }
+        this.Color();
+    }
+    this.Color = function(){
+        SetBackgroundColor(this.button, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+        // console.log("This is the beginning");
+        SetBackgroundColor(this.listElement, this.confirmedLiberal, this.confirmedFascist, this.inContention, this.suspicious);
+        // console.log("This is the end");
     }
 
     this.button.innerHTML = this.name;
@@ -221,11 +282,23 @@ const Policy = function(adminArray){
     this.hadLib = false;
     this.hadFac = false;
     this.element = undefined;
+    this.suspicious = false;
 
-    this.SetSuspicious = function(){
-        if(this.contention === false)
-            this.element.style.backgroundColor = COLOR.SUSPICION;
-    }
+    this.SetSuspicious = function(underSus = true){
+        this.suspicious = underSus;
+        // if(this.contention === false)
+        //     this.element.style.backgroundColor = COLOR.SUSPICION;
+        this.Color();
+    };
+    this.SetContention = function(inCon = true){
+        this.contention = inCon;
+        // console.log("a");
+        this.Color();
+        // console.log("b");
+    };
+    this.Color = function(){
+        SetBackgroundColor(this.element, false, false, this.contention, this.suspicious);
+    };
 
 
     if(this.threePolicies.includes(true) !== this.twoPolicies.includes(true)){
@@ -527,8 +600,11 @@ const AddPolicyToBoard = function(policy){
         div.innerHTML += "<br>";
     }
 
-    if(policy.contention)
-        div.style.backgroundColor = COLOR.CONTENTION;
+    // if(policy.contention)
+    //     div.style.backgroundColor = COLOR.CONTENTION;
+    SetBackgroundColor(div, false, false, policy.contention, policy.suspicious);
+
+        
     div.appendChild(GetPolicyImg(isLiberal));
     screens.policyList.appendChild(div);
     policy.element = div;
@@ -931,4 +1007,27 @@ const CheckCardCount = function(){
 
 const AddToPoliciesThisDeck = function(policy){
     policiesThisDeck.push(policy);
+}
+
+const SetBackgroundColor = function(element, l, f, c ,s){
+    // console.log(l, f, c ,s);
+    if(l === true){
+        element.style.backgroundColor = COLOR.LIBERAL;
+        element.style.backgroundImage = "";
+    } else if(f === true) {
+        element.style.backgroundColor = COLOR.FASCIST;
+        element.style.backgroundImage = "";
+    } else if(c === true && s === true) {
+        element.style.backgroundColor = "darkgray";
+        element.style.backgroundImage = "linear-gradient(" + COLOR.CONTENTION + ", " + COLOR.SUSPICION + ")";
+    } else if (c === true) {
+        element.style.backgroundColor = COLOR.CONTENTION;
+        element.style.backgroundImage = "";
+    } else if (s === true) {
+        element.style.backgroundColor = COLOR.SUSPICION;
+        element.style.backgroundImage = "";
+    } else {
+        element.style.backgroundColor = "darkgray";
+        element.style.backgroundImage = "";
+    }
 }
