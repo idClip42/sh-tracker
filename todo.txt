@@ -1,0 +1,10 @@
+SH Updates: 
+- Update cards picking with presets. 
+- Add not Hitler icon. 
+- Think about other ways to make user friendly. Clearer buttons, explanatory text. 
+- Colors to distinguish players in some way? 
+- Explanation of color key? 
+- Once someone orange is confirmed, all orange removed? All associated orange removed? List of suspicion objects instead of just a bool. 
+- Update color scheme for background 
+- background image? 
+- Remove undo, replace with highlight selection(and disabling of player buttons when P and C are selected) 

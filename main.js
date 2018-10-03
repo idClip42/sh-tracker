@@ -59,6 +59,7 @@ let cardCount = 17;
 // let presidentsThisDeck = [];
 let policiesThisDeck = [];
 let deckIsSuspicious = false;
+let inputArray = [];
 
 const GAME = {
     MIN_PLAYERS : 5,
@@ -154,9 +155,16 @@ const Player = function(name){
     };
     this.RemoveContentionFromOthers = function(){
         // console.log("RemoveContentionFromOthers");
+        // console.trace();
+        // console.log(this.name + " is in contention with...");
+        // console.log(this.inContentionWith);
         for(let c in this.inContentionWith){
+        // for(let c = 0; c < this.inContentionWith.length; ++c){
+
             // console.log(this.inContentionWith[c].name);
-            this.inContentionWith[c].RemoveContention(this);
+            // console.log(this.inContentionWith[c]);
+            this.inContentionWith[c].RemoveContention(getPlayerByName(this.name));
+            // console.log("success");
             // let other = this.inContentionWith[c];
             // for(let o in other.inContentionWith){
             //     let check = other.inContentionWith[o];
@@ -166,21 +174,24 @@ const Player = function(name){
             //     }
             // }
         }
-        this.Contention(false);
+        this.Contention(undefined, false);
     };
     this.RemoveContention = function(other){
         // console.log("\t" + other.name);
         // console.log(this.inContentionWith[0]);
+        // console.log(other);
         for(let c in this.inContentionWith){
             if(this.inContentionWith[c] === other){
                 // console.log("Match!");
+                // console.log("Cut!");
                 this.inContentionWith.splice(c, 1);
                 break;
             }
         }
         // console.log(this.name, this.inContentionWith.length);
         if(this.inContentionWith.length === 0)
-            this.inContention = false;
+            // this.inContention = false;
+            this.Contention(undefined, false);
         this.Color();
     };
     this.NotHitler = function(){
@@ -198,7 +209,7 @@ const Player = function(name){
                 player.ConfirmLiberal();
             else
                 player.ConfirmFascist();
-        if(player.confirmedFascist === true && liberal === true)
+        if(this.confirmedFascist === true && liberal === true)
             this.ConfirmFascist();
     };
     this.SetSuspicious = function(underSus = true){
@@ -339,9 +350,12 @@ window.onload = function(){
     let inputs = document.getElementsByTagName("input");
     for(let i in inputs){
         if(isNaN(parseInt(i))) continue;
-        inputs[i].ontouchend = function(e){
+        // inputs[i].ontouchend = function(e){
+        //     inputs[i].focus();
+        // }
+        setTapClick(inputs[i], function(e){
             inputs[i].focus();
-        }
+        });
     }
     // document.addEventListener("touchmove", function(e){
     //     e.preventDefault();
@@ -352,14 +366,15 @@ window.onload = function(){
     getDOMElements();
     setUpMenus();
 
-    buttons.autofill.ontouchend = function(){
+    // buttons.autofill.ontouchend = 
+    setTapClick(buttons.autofill, function(){
         const names = ["Alex", "Mike", "Tarana", "Joe", "Katie", "Larry", "Chris", "Jeff", "Jon", "Connor"];
         let elements = screens.nameEntry.getElementsByTagName("input");
         for(let e in elements){
             if(isNaN(parseInt(e))) continue;
             elements[e].value = names[e];
         }
-    }
+    });
 };
 
 const getDOMElements = function(){
@@ -438,13 +453,19 @@ const setUpMenus = function(){
     screens.policyList.style.display = "none";
     screens.all.style.display = "none";
 
-    buttons.nameSubmit.ontouchend = function(){ submitNames(goToScreen); };
-    buttons.back.ontouchend = function(){ goToScreen(screens.menu); };
+    // buttons.nameSubmit.ontouchend = function(){ submitNames(goToScreen); };
+    setTapClick(buttons.nameSubmit, function(){ submitNames(goToScreen); });
+    // buttons.back.ontouchend = function(){ goToScreen(screens.menu); };
+    setTapClick(buttons.back, function(){ goToScreen(screens.menu); });
     // buttons.goPlayerList.ontouchend = function(){ goToScreen(screens.playerList); };
-    buttons.goAdmin.ontouchend = function(){ goToScreen(screens.admin); AdministrationTracker(); };
-    buttons.goCheck.ontouchend = function(){ goToScreen(screens.check); CheckTracker(); };
-    buttons.goFlip.ontouchend = function(){ goToScreen(screens.flip); FlipTracker(); };
-    buttons.goKnow.ontouchend = function(){ goToScreen(screens.know); KnowTracker(); };
+    // buttons.goAdmin.ontouchend = function(){ goToScreen(screens.admin); AdministrationTracker(); };
+    setTapClick(buttons.goAdmin, function(){ goToScreen(screens.admin); AdministrationTracker(); });
+    // buttons.goCheck.ontouchend = function(){ goToScreen(screens.check); CheckTracker(); };
+    setTapClick(buttons.goCheck, function(){ goToScreen(screens.check); CheckTracker(); });
+    // buttons.goFlip.ontouchend = function(){ goToScreen(screens.flip); FlipTracker(); };
+    setTapClick(buttons.goFlip, function(){ goToScreen(screens.flip); FlipTracker(); });
+    // buttons.goKnow.ontouchend = function(){ goToScreen(screens.know); KnowTracker(); };
+    setTapClick(buttons.goKnow, function(){ goToScreen(screens.know); KnowTracker(); });
 };
 
 const submitNames = function(leaveScreen){
@@ -476,16 +497,21 @@ const getPlayerByName = function(name){
 
 const setNameButtonsFunction = function(func){
     for(let p in players){
-        players[p].button.ontouchend = func.bind(players[p]);
+        // players[p].button.ontouchend = func.bind(players[p]);
+        setTapClick(players[p].button, func.bind(players[p]));
     }
 };
 
 const clearTopButtonFunctions = function(){
     setNameButtonsFunction(function(){});
-    buttons.liberal.ontouchend = function(){};
-    buttons.fascist.ontouchend = function(){};
-    buttons.undo.ontouchend = function(){};
-    buttons.confirm.ontouchend = function(){};
+    // buttons.liberal.ontouchend = function(){};
+    setTapClick(buttons.liberal, function(){});
+    // buttons.fascist.ontouchend = function(){};
+    setTapClick(buttons.fascist, function(){});
+    // buttons.undo.ontouchend = function(){};
+    setTapClick(buttons.undo, function(){});
+    // buttons.confirm.ontouchend = function(){};
+    setTapClick(buttons.confirm, function(){});
 }
 
 const AdministrationTracker = function(){
@@ -515,21 +541,25 @@ const AdministrationTracker = function(){
         }
 
         clearTopButtonFunctions();
-        buttons.undo.ontouchend = function(){ if(admin.length > 0) admin.pop(); update();};
+        // buttons.undo.ontouchend = function(){ if(admin.length > 0) admin.pop(); update();};
+        setTapClick(buttons.undo, function(){ if(admin.length > 0) admin.pop(); update();});
         if(admin.length < 2){
             setNameButtonsFunction(function(){ admin.push(this.name); update(); });
             elements.playerButtons.style.display = "inherit";
             elements.teamButtons.style.display = "none";
             buttons.undo.style.display = "inherit";
         } else {
-            buttons.liberal.ontouchend = function(){ admin.push(true); update(); };
-            buttons.fascist.ontouchend = function(){ admin.push(false); update(); };
+            // buttons.liberal.ontouchend = function(){ admin.push(true); update(); };
+            // buttons.fascist.ontouchend = function(){ admin.push(false); update(); };
+            setTapClick(buttons.liberal, function(){ admin.push(true); update(); });
+            setTapClick(buttons.fascist, function(){ admin.push(false); update(); });
             elements.playerButtons.style.display = "none";
             elements.teamButtons.style.display = "inherit";
             buttons.undo.style.display = "inherit";
         }
 
-        buttons.confirm.ontouchend = function(){
+        // buttons.confirm.ontouchend = 
+        setTapClick(buttons.confirm, function(){
             if(admin.length !== 8)
                 return;
 
@@ -545,7 +575,7 @@ const AdministrationTracker = function(){
             AddPolicyToBoard(policy);
             
             goToScreen(screens.menu);
-        }
+        });
 
     }
     update();
@@ -639,21 +669,25 @@ const CheckTracker = function(){
         }
 
         clearTopButtonFunctions();
-        buttons.undo.ontouchend = function(){ if(check.length > 0) check.pop(); update();};
+        // buttons.undo.ontouchend = function(){ if(check.length > 0) check.pop(); update();};
+        setTapClick(buttons.undo, function(){ if(check.length > 0) check.pop(); update();});
         if(check.length < 2){
             setNameButtonsFunction(function(){ check.push(this.name); update(); });
             elements.playerButtons.style.display = "inherit";
             elements.teamButtons.style.display = "none";
             buttons.undo.style.display = "inherit";
         } else {
-            buttons.liberal.ontouchend = function(){ check.push(true); update(); };
-            buttons.fascist.ontouchend = function(){ check.push(false); update(); };
+            // buttons.liberal.ontouchend = function(){ check.push(true); update(); };
+            // buttons.fascist.ontouchend = function(){ check.push(false); update(); };
+            setTapClick(buttons.liberal, function(){ admin.push(true); update(); });
+            setTapClick(buttons.fascist, function(){ admin.push(false); update(); });
             elements.playerButtons.style.display = "none";
             elements.teamButtons.style.display = "inherit";
             buttons.undo.style.display = "inherit";
         }
 
-        buttons.confirm.ontouchend = function(){
+        // buttons.confirm.ontouchend = 
+        setTapClick(buttons.confirm, function(){
             if(check.length !== 3)
                 return;
 
@@ -661,6 +695,8 @@ const CheckTracker = function(){
 
             let investigator = getPlayerByName(check[0]);
             let investigatee = getPlayerByName(check[1]);
+            // console.log(check[0], investigator);
+            // console.log(check[1], investigatee);
             let isLiberal = check[2];
 
             if(isLiberal === true){
@@ -674,7 +710,7 @@ const CheckTracker = function(){
             investigator.Check(investigatee, isLiberal);
             
             goToScreen(screens.menu);
-        }
+        });
 
     }
     update();
@@ -691,14 +727,18 @@ const FlipTracker = function(){
         }
 
         clearTopButtonFunctions();
-        buttons.undo.ontouchend = function(){ flip = undefined; update();};
-        buttons.liberal.ontouchend = function(){ flip = true; update(); };
-        buttons.fascist.ontouchend = function(){ flip = false; update(); };
+        setTapClick(buttons.undo, function(){ flip = undefined; update();});
+        // buttons.undo.ontouchend = function(){ flip = undefined; update();};
+        setTapClick(buttons.liberal, function(){ flip = true; update();});
+        // buttons.liberal.ontouchend = function(){ flip = true; update(); };
+        setTapClick(buttons.fascist, function(){ flip = false; update();});
+        // buttons.fascist.ontouchend = function(){ flip = false; update(); };
         elements.playerButtons.style.display = "none";
         elements.teamButtons.style.display = "inherit";
         buttons.undo.style.display = "inherit";
 
-        buttons.confirm.ontouchend = function(){
+        // buttons.confirm.ontouchend = 
+        setTapClick(buttons.confirm, function(){
             if(flip === undefined) return;
 
             clearTopButtonFunctions();
@@ -719,7 +759,7 @@ const FlipTracker = function(){
             screens.policyList.scrollTo(0,screens.policyList.scrollHeight);
             
             goToScreen(screens.menu);
-        }
+        });
 
     }
     update();
@@ -743,21 +783,25 @@ const KnowTracker = function(){
         }
 
         clearTopButtonFunctions();
-        buttons.undo.ontouchend = function(){ if(check.length > 0) check.pop(); update();};
+        // buttons.undo.ontouchend = function(){ if(check.length > 0) check.pop(); update();};
+        setTapClick(buttons.undo, function(){ if(check.length > 0) check.pop(); update();});
         if(check.length < 1){
             setNameButtonsFunction(function(){ check.push(this.name); update(); });
             elements.playerButtons.style.display = "inherit";
             elements.teamButtons.style.display = "none";
             buttons.undo.style.display = "inherit";
         } else {
-            buttons.liberal.ontouchend = function(){ check.push(true); update(); };
-            buttons.fascist.ontouchend = function(){ check.push(false); update(); };
+            // buttons.liberal.ontouchend = function(){ check.push(true); update(); };
+            // buttons.fascist.ontouchend = function(){ check.push(false); update(); };
+            setTapClick(buttons.liberal, function(){ check.push(true); update(); });
+            setTapClick(buttons.fascist, function(){ check.push(false); update(); });
             elements.playerButtons.style.display = "none";
             elements.teamButtons.style.display = "inherit";
             buttons.undo.style.display = "inherit";
         }
 
-        buttons.confirm.ontouchend = function(){
+        // buttons.confirm.ontouchend = 
+        setTapClick(buttons.confirm, function(){
             if(check.length !== 2)
                 return;
 
@@ -773,7 +817,7 @@ const KnowTracker = function(){
             }
             
             goToScreen(screens.menu);
-        }
+        });
 
     }
     update();
@@ -1031,3 +1075,126 @@ const SetBackgroundColor = function(element, l, f, c ,s){
         element.style.backgroundImage = "";
     }
 }
+
+const setTapClick = function(e, func){
+    e.onclick = func;
+    e.ontouchend = func;
+};
+
+const AdministrationTracker2 = function(){
+    inputArray = [];
+    let admin = [];
+
+    let update = function(){
+
+        admin.length = Math.min(admin.length, 8);
+
+        elements.newPresident.innerHTML = "";
+        elements.newChancellor.innerHTML = "";
+        elements.threePolicies.innerHTML = "";
+        elements.twoPolicies.innerHTML = "";
+        elements.onePolicy.innerHTML = "";
+
+        for(let n = 0; n < admin.length; ++n){
+            if(n === 0)
+                elements.newPresident.innerHTML = admin[n];
+            else if(n === 1)
+                elements.newChancellor.innerHTML = admin[n];
+            else if (n < 5)
+                elements.threePolicies.appendChild(GetPolicyImg(admin[n]));
+            else if (n < 7)
+                elements.twoPolicies.appendChild(GetPolicyImg(admin[n]));
+            else if(n === 7)
+                elements.onePolicy.appendChild(GetPolicyImg(admin[n]));
+        }
+
+        clearTopButtonFunctions();
+        setTapClick(buttons.undo, function(){ if(admin.length > 0) admin.pop(); update();});
+        if(admin.length < 2){
+            setNameButtonsFunction(function(){ admin.push(this.name); update(); });
+            elements.playerButtons.style.display = "inherit";
+            elements.teamButtons.style.display = "none";
+            buttons.undo.style.display = "inherit";
+        } else {
+            setTapClick(buttons.liberal, function(){ admin.push(true); update(); });
+            setTapClick(buttons.fascist, function(){ admin.push(false); update(); });
+            elements.playerButtons.style.display = "none";
+            elements.teamButtons.style.display = "inherit";
+            buttons.undo.style.display = "inherit";
+        }
+
+        setTapClick(buttons.confirm, function(){
+            if(admin.length !== 8)
+                return;
+
+            clearTopButtonFunctions();
+
+            if(InHitlerTerritory() === true)
+                getPlayerByName(admin[1]).NotHitler();
+
+            let policy = new Policy(admin);
+            policies.push(policy);
+            getPlayerByName(admin[0]).policies.push(policy);
+            getPlayerByName(admin[1]).policies.push(policy);
+            AddPolicyToBoard(policy);
+            
+            goToScreen(screens.menu);
+        });
+
+    }
+    update();
+};
+
+
+const FillPolicyOptions =  function(){
+    const threeCardHands = [
+        [true, true, true],
+        [true, true, false],
+        [true, false, false],
+        [false, false, false]
+    ];
+    const twoCardHands = [
+        [true, true],
+        [true, false], 
+        [false, false],
+    ];
+    const oneCardHands = [
+        [true],
+        [false]
+    ];
+
+    const fillInRows = function(parent, possibleHands){
+        parent.innerHTML = "";
+        for(let h in possibleHands){
+            let button = document.createElement("button");
+            button.className = "policy-option";
+            parent.appendChild(button);
+            for(let c in possibleHands[h]){
+                let card = possibleHands[h][c];
+                button.appendChild(GetPolicyImg(card));
+            }
+            parent.innerHTML += "<br>";
+        }
+    };
+
+    fillInRows(elements.threePolicies, threeCardHands);
+    fillInRows(elements.twoPolicies, twoCardHands);
+    fillInRows(elements.onePolicy, oneCardHands);
+};
+// window.FillPolicyOptions = FillPolicyOptions;
+
+const HighlightButton = function(element, highlightOn, color){
+    element.style.borderStyle = highlightOn ? "solid" : "none";
+    element.style.borderWidth = "2px";
+    element.style.borderColor = color;
+};
+
+const SetUpInputPiece = function(buttonParent, inputIndex, highlightColorArray){
+
+};
+
+const ClearInput = function(buttonParent){
+    let buttons = buttonParent.getElementsByTagName("button");
+    for(let b in buttons)
+        HighlightButton(buttons[b], false);
+};
